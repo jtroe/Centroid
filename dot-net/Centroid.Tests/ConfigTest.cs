@@ -64,5 +64,12 @@ namespace Centroid.Tests
                     Assert.NotNull(config.All);
                 });
         }
+
+        [Test]
+        public void supports_indexing()
+        {
+            dynamic config = new Config(@"{ ""snake_key"": ""some value"" }");
+            Assert.AreEqual("some value", config["SnakeKey"]);
+        }
     }
 }

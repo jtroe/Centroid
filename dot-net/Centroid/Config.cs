@@ -46,17 +46,7 @@ namespace Centroid
         {
             try
             {
-                var container = GetValue(binder.Name);
-
-                if (container is JContainer)
-                {
-                    result = new Config(container, Environment);
-                }
-                else
-                {
-                    result = container.Value;
-                }
-
+                result = GetValue(binder.Name);
                 return true;
             }
             catch
@@ -86,6 +76,11 @@ namespace Centroid
             }
         }
 
+        public dynamic this[string key]
+        {
+            get { return GetValue(key); }
+        }
+
         public override string ToString()
         {
             return RawConfig.ToString();
@@ -98,8 +93,14 @@ namespace Centroid
 
         private dynamic GetValue(string key)
         {
-            key = GetActualKey(key);
-            return RawConfig[key];
+            var container = RawConfig[GetActualKey(key)];
+
+            if (container is JContainer)
+            {
+                return new Config(container, Environment);
+            }
+
+            return container.Value;
         }
 
         private string GetActualKey(string key)
