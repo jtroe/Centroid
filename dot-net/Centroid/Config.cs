@@ -82,23 +82,36 @@ namespace Centroid
                 result = rawConfig.ToObject(binder.Type);
                 //ensure at least one property in the config bound to the type
                 var JResult = JToken.FromObject(result);
-                bool hasBoundProperty =
-                    JResult.Cast<JProperty>().Any(property =>
-                    {
-                        return rawConfig.Cast<JProperty>().Any(rawProperty =>
-                        {
-                            return
-                                NormaliseKey(rawProperty.Name).Equals(NormaliseKey(property.Name))
-                                    && rawProperty.Value.Equals(property.Value);
-                        });
-                    });
-                if (!hasBoundProperty) throw new InvalidCastException();
+                if (!hasBoundProperty(rawConfig, JResult)) throw new InvalidCastException();*/
                 return true;
             }
             catch (InvalidCastException)
             {
                 return base.TryConvert(binder, out result);
             }
+        }
+
+        private bool hasBoundProperty(JToken originObject, JToken castResult)
+        {
+            JToken rawConfig = RawConfig;
+            JArray JCastResult, JOriginObject = null;
+            if ((JCastResult = castResult as JArray) != null && (JOriginObject = originObject as JArray) != null)
+            {
+                if (JCastResult.Count != JOriginObject.Count)
+                    return false;
+
+            }
+            bool hasBoundProperty =
+                castResult.Cast<JProperty>().Any(property =>
+                {
+                    return originObject.Cast<JProperty>().Any(rawProperty =>
+                    {
+                        return
+                            NormaliseKey(rawProperty.Name).Equals(NormaliseKey(property.Name))
+                                && rawProperty.Value.Equals(property.Value);
+                    });
+                });
+            return hasBoundProperty;
         }
 
         public override string ToString()
